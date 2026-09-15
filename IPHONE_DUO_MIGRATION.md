@@ -10,7 +10,7 @@
 
 - iPhone Duo is a **foldable iPhone with two displays**: a compact **outer display** and a large **inner display**. It is still an **iPhone app target**, not a new platform or idiom.
 - **Hardware (Apple Newsroom, Sept 9, 2026):** outer display 5.4", inner foldable display 7.6", both Super Retina XDR with ProMotion (up to 120 Hz), Always-On, 3000 nits peak; inner display has a nano-texture finish. A20 Pro chip (6-core CPU, 7-core GPU, dual 16-core Neural Engine). Grade 5 titanium body; precision hinge of 100+ components. Pre-orders Oct 16, 2026; **ships Oct 23, 2026**.
-- **Reported logical dimensions (secondary reporting, verify in simulator):** outer ≈ 466 × 678 pt @3x; inner ≈ 626 × 890 pt portrait / 890 × 626 pt landscape. Both displays share a ≈1.42:1 aspect ratio (close to √2), so proportional layouts and two-column documents scale cleanly between displays.
+- **Reported logical dimensions (secondary reporting, verify in simulator):** outer ≈ 466 × 678 pt @3x; inner ≈ 626 × 890 pt portrait / 890 × 626 pt landscape. Both displays share a ≈1.42:1 aspect ratio (close to √2), so proportional layouts and two-column documents scale cleanly between displays. Verified pixel sizes from the App Store Connect screenshot specs: outer 1398 × 2034 px, inner 2007 × 2853 px (the inner value does not match the reported pt figures at @3x, one more reason to confirm in the simulator).
 - **No Face ID.** Biometric authentication is **Touch ID in the side button** (works open and closed); Apple Watch unlock is also supported. The outer display has a corner-placed Dynamic Island camera; the inner display has an **under-display FaceTime camera** (surfaces in layout only as an occlusion region when active).
 - **Apple Pencil (USB-C) support on the inner display** arrives later in 2026 - relevant if the app has drawing/annotation features (PencilKit).
 - **Poses:** closed, fully open (flat), partially folded ("book"), tent/laptop on a table, and rotated variants. Apps must resize live as the user opens, closes, folds, or rotates the device.
@@ -40,7 +40,8 @@
 2. Run on the **iPhone Duo simulator in Device Hub**; use the on-screen control buttons to open, close, rotate, and fold the device.
 3. Xcode 27.1 ships the updated app-modernization analysis tool **"App Resizability"** (transcribed as "App Precisability" in the Tech Talk audio) - it audits fixed-size dependencies and now supports SwiftUI and iPhone Duo. Run it as an automated first pass.
 4. Note (App Store): starting April 2027, apps must be built with the latest SDKs (iOS 27 family).
-5. Timeline: Apple runs iPhone Duo **Group Labs and SwiftUI/UIKit Q&As on Sept 16 and 23, 2026**; the device **ships Oct 23, 2026** - adaptation should land before then.
+5. Timeline: Apple runs iPhone Duo **Group Labs on Sept 16-17, 2026** and **Developer Forums Q&As on Sept 23, 2026** (Photos & Camera, SwiftUI, UIKit sessions); the device **ships Oct 23, 2026** - adaptation should land before then.
+6. App Store assets (verified, ASC screenshot specifications): iPhone Duo screenshots are **1398 × 2034 px** for the outer display and **2007 × 2853 px** for the inner display (swap for landscape). Upload support in App Store Connect arrives later this year - prepare the assets now.
 
 ## 3. Migration workflow for Claude Code
 
@@ -383,12 +384,14 @@ All published by Apple on September 9, 2026 (iPhone Duo announcement day) unless
 - Related: Modernize your UIKit app (WWDC26) - https://developer.apple.com/videos/play/wwdc2026/278
 - HIG: Designing for iPhone Duo - https://developer.apple.com/design/human-interface-guidelines/designing-for-iphone-duo
 - Apple Newsroom: "Apple unveils iPhone Duo" (Sept 9, 2026) - https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/
+- App Store Connect: Screenshot specifications - https://developer.apple.com/help/app-store-connect/reference/screenshot-specifications/
 - Compiled research on iPhone Duo hardware/HIG (secondary source, Sept 2026): source of the reported point dimensions (466×678 / 626×890 pt)
 
 > Note: This guide was compiled from session transcripts, session pages, Apple Newsroom, the HIG, and secondary research. Some API spellings were normalized from audio transcription (e.g. `onGeometryChange`, `ArrangementView`; the Xcode tool transcribed as "App Precisability" is "App Resizability"). `ToolbarItemVisibilityPriority` / `UIBarButtonItemVisibilityPriority` and the vertical-bar ordering are confirmed by the HIG; hardware point dimensions still come from secondary reporting. Verify exact API signatures against the iOS 27.1 SDK headers in Xcode 27.1 before relying on them in code review.
 
 ## 6. Changelog
 
+- **2026-09-15 (2):** Added verified App Store Connect screenshot specs for iPhone Duo (outer 1398 × 2034 px, inner 2007 × 2853 px; ASC upload support later this year) and refined the Group Labs / Forums Q&A schedule (labs Sept 16-17, Q&As Sept 23).
 - **2026-09-15:** Incorporated the full HIG "Designing for iPhone Duo" guidance: games adaptation rules, toolbar grouping (`ToolbarItemGroup` / `UIBarButtonItemGroup`), title+symbol requirement for bar items, control-proximity rule, and the overflow strategy for navigation-focused vs task-oriented apps. Confirmed visibility priority API names against the HIG. Status check: iOS 27.0 and Xcode 27 shipped Sept 14, 2026; iPhone Duo APIs still require the iOS 27.1 SDK (Xcode 27.1). No new iPhone Duo videos or news items since Sept 9.
 - **2026-09-10:** Initial version from the six Sept 9 Tech Talks, Developer News, Apple Newsroom, and secondary research.
 
