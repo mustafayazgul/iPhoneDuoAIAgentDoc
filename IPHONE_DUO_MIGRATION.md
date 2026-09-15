@@ -155,6 +155,9 @@ tabBarController.sidebar.preferredPlacement = .sidebar
   - **Prefer symbol-only (SF Symbol) toolbar items.** Wide items (text buttons like "Edit", amounts, segmented controls) stay in the horizontal nav/header area instead of moving to the side.
   - Vertical bars have fixed width and flexible height. Top-to-bottom ordering in the vertical bar: (1) primary navigation, Back/Close (SwiftUI `cancellationAction`, UIKit leading-edge items); (2) prominent confirm actions like Done/Save (SwiftUI `topBarPinnedTrailing`, UIKit `pinnedTrailingGroup`); (3) flexible spacer; (4) tool/tab icons by priority; (5) overflow menu.
   - The bar region is shared with system UI (status bar, Dynamic Island expanding vertically with Live Activities). When vertical space runs out, items fold bottom-up into the overflow menu, governed by `ToolbarItemVisibilityPriority` (SwiftUI) / `UIBarButtonItemVisibilityPriority` (UIKit) - give core actions high priority so they collapse last.
+  - Group related items with `ToolbarItemGroup` (SwiftUI) / `UIBarButtonItemGroup` (UIKit); the system preserves original groupings and inserts vertical space between top and bottom bar groups.
+  - Keep controls near the content they affect (e.g. list controls above the list, not on the far edge), and give every non-text toolbar item both a title and a symbol: the symbol shows in the bar, the title in the overflow menu.
+  - Do not override the system's default bar placement; when space is tight, navigation-focused apps should move toolbar actions into the system overflow menu, while task-oriented apps should minimize the tab bar instead.
 
 ```swift
 // Control the axis of a custom toolbar view
@@ -325,6 +328,7 @@ directionCoordinator = AVCaptureDeviceDirectionCoordinator(
 5. Use standard system components and bars wherever possible - displacement, fold avoidance, vertical bars, and overflow come free.
 6. Support accessibility across all poses.
 7. Consider supporting landscape if the app is portrait-only (tent pose makes landscape common).
+8. Games (HIG): a game may lock to portrait or landscape, but it must keep filling the screen as the pose changes; prefer adapting the aspect ratio over letterboxing or pillarboxing, and if padding is unavoidable, fill it with artwork rather than black bars.
 
 ### Phase 8 - Verification matrix (must pass before done)
 
@@ -379,7 +383,12 @@ All published by Apple on September 9, 2026 (iPhone Duo announcement day) unless
 - Related: Modernize your UIKit app (WWDC26) - https://developer.apple.com/videos/play/wwdc2026/278
 - HIG: Designing for iPhone Duo - https://developer.apple.com/design/human-interface-guidelines/designing-for-iphone-duo
 - Apple Newsroom: "Apple unveils iPhone Duo" (Sept 9, 2026) - https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/
-- Compiled research on iPhone Duo hardware/HIG (user-provided secondary source, Sept 2026): source of the reported point dimensions (466×678 / 626×890 pt), vertical-bar ordering details, and SDK behavior tiers
+- Compiled research on iPhone Duo hardware/HIG (secondary source, Sept 2026): source of the reported point dimensions (466×678 / 626×890 pt)
 
-> Note: This guide was compiled from session transcripts, session pages, Apple Newsroom, and secondary research. Some API spellings were normalized from audio transcription (e.g. `onGeometryChange`, `ArrangementView`; the Xcode tool transcribed as "App Precisability" is "App Resizability"). Hardware point dimensions and exact bar-ordering placements come from secondary reporting of Apple's HIG. Verify exact API signatures against the iOS 27.1 SDK headers in Xcode 27.1 before relying on them in code review.
+> Note: This guide was compiled from session transcripts, session pages, Apple Newsroom, the HIG, and secondary research. Some API spellings were normalized from audio transcription (e.g. `onGeometryChange`, `ArrangementView`; the Xcode tool transcribed as "App Precisability" is "App Resizability"). `ToolbarItemVisibilityPriority` / `UIBarButtonItemVisibilityPriority` and the vertical-bar ordering are confirmed by the HIG; hardware point dimensions still come from secondary reporting. Verify exact API signatures against the iOS 27.1 SDK headers in Xcode 27.1 before relying on them in code review.
+
+## 6. Changelog
+
+- **2026-09-15:** Incorporated the full HIG "Designing for iPhone Duo" guidance: games adaptation rules, toolbar grouping (`ToolbarItemGroup` / `UIBarButtonItemGroup`), title+symbol requirement for bar items, control-proximity rule, and the overflow strategy for navigation-focused vs task-oriented apps. Confirmed visibility priority API names against the HIG. Status check: iOS 27.0 and Xcode 27 shipped Sept 14, 2026; iPhone Duo APIs still require the iOS 27.1 SDK (Xcode 27.1). No new iPhone Duo videos or news items since Sept 9.
+- **2026-09-10:** Initial version from the six Sept 9 Tech Talks, Developer News, Apple Newsroom, and secondary research.
 

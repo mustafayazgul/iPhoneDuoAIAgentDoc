@@ -25,6 +25,7 @@ Key topics covered:
 - Split View multitasking, multiple scenes, scene accessories, and the camera capture accessory
 - Camera adaptation: Virtual Front Camera, `AVCaptureDeviceDirectionCoordinator`, dynamic aspect ratios
 - Touch ID instead of Face ID: `LAContext.biometryType` handling
+- Games: pose-aware fullscreen rules from the HIG (aspect ratio over letterboxing)
 - A 14-configuration verification matrix for the iPhone Duo simulator (Device Hub, Xcode 27.1)
 
 ## How to use it
@@ -59,4 +60,4 @@ Full links are listed at the bottom of the guide.
 - Logical point dimensions and some bar-ordering details come from secondary reporting and are flagged as such in the guide.
 - This is an unofficial community resource, not affiliated with or endorsed by Apple.
 
-Last updated: September 10, 2026
+Last updated: September 15, 2026 (full HIG guidance incorporated; iOS 27.0 and Xcode 27 shipped Sept 14, but iPhone Duo APIs require the iOS 27.1 SDK)
