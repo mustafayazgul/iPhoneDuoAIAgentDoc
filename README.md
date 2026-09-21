@@ -60,4 +60,4 @@ Full links are listed at the bottom of the guide.
 - Logical point dimensions and some bar-ordering details come from secondary reporting and are flagged as such in the guide.
 - This is an unofficial community resource, not affiliated with or endorsed by Apple.
 
-Last updated: September 15, 2026 (full HIG guidance incorporated; iOS 27.0 and Xcode 27 shipped Sept 14, but iPhone Duo APIs require the iOS 27.1 SDK)
+Last updated: September 21, 2026 (Xcode 27.1 beta with the iPhone Duo SDK is out, Figma/Sketch design kits published, and the ArrangementView / UIArrangementViewController / UIHingeInteraction API reference pages are live and verified)

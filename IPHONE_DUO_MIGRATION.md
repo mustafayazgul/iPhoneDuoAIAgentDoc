@@ -36,12 +36,14 @@
 
 ## 2. Toolchain requirements
 
-1. **Xcode 27.1** with the **iOS 27.1 SDK** (edge-to-edge layout, reserved regions, arrangements, hinge, scene accessory, and Duo camera APIs are 27.1 APIs).
+1. **Xcode 27.1** with the **iOS 27.1 SDK** (edge-to-edge layout, reserved regions, arrangements, hinge, scene accessory, and Duo camera APIs are 27.1 APIs). Xcode 27.1 beta (27A9269) is available since Sept 18, 2026. Note: iPhone Duo ships with iOS 27.1 while other devices already get iOS 27.2 betas; the Duo APIs live in the 27.1 SDK line.
 2. Run on the **iPhone Duo simulator in Device Hub**; use the on-screen control buttons to open, close, rotate, and fold the device.
 3. Xcode 27.1 ships the updated app-modernization analysis tool **"App Resizability"** (transcribed as "App Precisability" in the Tech Talk audio) - it audits fixed-size dependencies and now supports SwiftUI and iPhone Duo. Run it as an automated first pass.
 4. Note (App Store): starting April 2027, apps must be built with the latest SDKs (iOS 27 family).
 5. Timeline: Apple runs iPhone Duo **Group Labs on Sept 16-17, 2026** and **Developer Forums Q&As on Sept 23, 2026** (Photos & Camera, SwiftUI, UIKit sessions); the device **ships Oct 23, 2026** - adaptation should land before then.
 6. App Store assets (verified, ASC screenshot specifications): iPhone Duo screenshots are **1398 × 2034 px** for the outer display and **2007 × 2853 px** for the inner display (swap for landscape). Upload support in App Store Connect arrives later this year - prepare the assets now.
+7. Design assets: official **iPhone Duo design kits for Figma and Sketch** are available from Apple Design Resources (https://developer.apple.com/design/resources/) - use them for mockups before coding.
+8. In-person help: Apple runs **worldwide iPhone Duo workshops** (https://developer.apple.com/events/view/upcoming-events?search=workshop); the developer landing page is https://developer.apple.com/iphone-duo/.
 
 ## 3. Migration workflow for Claude Code
 
@@ -252,6 +254,11 @@ arrangementVC.updateArrangement(.split.axes(.horizontal))
 let zIndex = arrangementVC.state(for: .primary)?.zIndex ?? 0
 ```
 
+Verified against the now-published API reference (iOS/iPadOS 27.1+ beta, Mac Catalyst supported):
+
+- SwiftUI: `struct ArrangementView<Primary: View, Secondary: View>`, `init(primary:secondary:)`. Styles: `AutomaticArrangementViewStyle` (the default), `SplitArrangementViewStyle`, `OverlayArrangementViewStyle`, via `arrangementViewStyle(_:)`. Fine-tuning modifiers: `overlayArrangementEdge(_:)`, `splitArrangementLayoutRatio(_:)`, `splitArrangementLayoutSize(minWidth:...)`, `splitArrangementFixedLayoutSize(horizontal:vertical:)`.
+- UIKit: `UIArrangementViewController` with `setViewController(_:for:animated:)`, `viewController(for:)`, `placement(for:)`, `state(for:)` returning a `ViewState`, and `updateArrangement(_:animated:)` taking `UISplitArrangement` (default) or `UIOverlayArrangement`; both support `.axes(...)`.
+
 Choosing an arrangement:
 
 - Existing `HStack`/`VStack`-style side-by-side layout, or main–detail content where neither view may be obscured → **split**.
@@ -274,10 +281,16 @@ GuitarView(pitchBend: pitchBend)
             pitchBend = 0
         }
     }
-// UIKit: UIHingeInteraction
+// UIKit (verified API): add a UIHingeInteraction to a view
+let interaction = UIHingeInteraction { [weak self] _, update in
+    guard let hinge = update.hinge else { self?.handleHingeUnavailable(); return }
+    self?.apply(angle: hinge.angle, status: hinge.status)
+}
+view.addInteraction(interaction)
+// UIHingeInteraction: init(updateHandler:), isEnabled; UIHinge: angle, status
 ```
 
-  - `context.hinge` is `nil` on devices without a hinge - always guard.
+  - `context.hinge` / `update.hinge` is `nil` on devices without a hinge - always guard.
   - Status values: `closed`, `partiallyOpen`, `fullyOpen`, plus continuous angle updates.
 
 - **Scene accessories** - show supplementary UI on the other display simultaneously; availability is system-controlled and dynamic:
@@ -385,12 +398,16 @@ All published by Apple on September 9, 2026 (iPhone Duo announcement day) unless
 - HIG: Designing for iPhone Duo - https://developer.apple.com/design/human-interface-guidelines/designing-for-iphone-duo
 - Apple Newsroom: "Apple unveils iPhone Duo" (Sept 9, 2026) - https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/
 - App Store Connect: Screenshot specifications - https://developer.apple.com/help/app-store-connect/reference/screenshot-specifications/
+- News: "Build for iPhone Duo with new resources" (Sept 18, 2026) - https://developer.apple.com/news/?id=nyuppv9r
+- API reference (iOS 27.1 beta): ArrangementView - https://developer.apple.com/documentation/swiftui/arrangementview ; UIArrangementViewController - https://developer.apple.com/documentation/uikit/uiarrangementviewcontroller ; UIHingeInteraction - https://developer.apple.com/documentation/uikit/uihingeinteraction
+- Apple Design Resources (iPhone Duo Figma/Sketch kits) - https://developer.apple.com/design/resources/
 - Compiled research on iPhone Duo hardware/HIG (secondary source, Sept 2026): source of the reported point dimensions (466×678 / 626×890 pt)
 
-> Note: This guide was compiled from session transcripts, session pages, Apple Newsroom, the HIG, and secondary research. Some API spellings were normalized from audio transcription (e.g. `onGeometryChange`, `ArrangementView`; the Xcode tool transcribed as "App Precisability" is "App Resizability"). `ToolbarItemVisibilityPriority` / `UIBarButtonItemVisibilityPriority` and the vertical-bar ordering are confirmed by the HIG; hardware point dimensions still come from secondary reporting. Verify exact API signatures against the iOS 27.1 SDK headers in Xcode 27.1 before relying on them in code review.
+> Note: This guide was compiled from session transcripts, session pages, Apple Newsroom, the HIG, and secondary research. Some API spellings were normalized from audio transcription (e.g. `onGeometryChange`, `ArrangementView`; the Xcode tool transcribed as "App Precisability" is "App Resizability"). `ToolbarItemVisibilityPriority` / `UIBarButtonItemVisibilityPriority` and the vertical-bar ordering are confirmed by the HIG; hardware point dimensions still come from secondary reporting. As of Sept 21, 2026 the API reference is live and `ArrangementView`, `UIArrangementViewController`, and `UIHingeInteraction` are verified against it (all iOS/iPadOS 27.1+ beta); remaining unverified signatures (reserved regions, scene accessories, camera) should still be checked against the Xcode 27.1 beta SDK headers.
 
 ## 6. Changelog
 
+- **2026-09-21:** Xcode 27.1 beta (27A9269) released Sept 18 with the iPhone Duo SDK and simulator; official Figma/Sketch design kits published in Apple Design Resources; worldwide workshops announced ("Build for iPhone Duo with new resources", Sept 18). API reference is now live: verified `ArrangementView` (init(primary:secondary:), automatic/split/overlay styles, layout-ratio and edge modifiers), `UIArrangementViewController` (updateArrangement(_:animated:), ViewPlacement, ViewState, Mac Catalyst support) and `UIHingeInteraction` (init(updateHandler:), UIHinge.angle/status). All are marked iOS/iPadOS 27.1+ beta. Also noted: iPhone Duo ships with iOS 27.1 while iOS 27.2 betas roll out for other devices.
 - **2026-09-15 (2):** Added verified App Store Connect screenshot specs for iPhone Duo (outer 1398 × 2034 px, inner 2007 × 2853 px; ASC upload support later this year) and refined the Group Labs / Forums Q&A schedule (labs Sept 16-17, Q&As Sept 23).
 - **2026-09-15:** Incorporated the full HIG "Designing for iPhone Duo" guidance: games adaptation rules, toolbar grouping (`ToolbarItemGroup` / `UIBarButtonItemGroup`), title+symbol requirement for bar items, control-proximity rule, and the overflow strategy for navigation-focused vs task-oriented apps. Confirmed visibility priority API names against the HIG. Status check: iOS 27.0 and Xcode 27 shipped Sept 14, 2026; iPhone Duo APIs still require the iOS 27.1 SDK (Xcode 27.1). No new iPhone Duo videos or news items since Sept 9.
 - **2026-09-10:** Initial version from the six Sept 9 Tech Talks, Developer News, Apple Newsroom, and secondary research.
