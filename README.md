@@ -60,4 +60,4 @@ Full links are listed at the bottom of the guide.
 - Logical point dimensions and some bar-ordering details come from secondary reporting and are flagged as such in the guide.
 - This is an unofficial community resource, not affiliated with or endorsed by Apple.
 
-Last updated: September 21, 2026 (Xcode 27.1 beta with the iPhone Duo SDK is out, Figma/Sketch design kits published, and the ArrangementView / UIArrangementViewController / UIHingeInteraction API reference pages are live and verified)
+Last updated: October 7, 2026 (Xcode 27.1 RC is out, App Store submissions and screenshot uploads for iPhone Duo are open, and Apple's official written guide "Preparing your app for iPhone Duo" is incorporated, including background extension, vertical-bar edge queries, and sheet placement APIs)

@@ -36,14 +36,15 @@
 
 ## 2. Toolchain requirements
 
-1. **Xcode 27.1** with the **iOS 27.1 SDK** (edge-to-edge layout, reserved regions, arrangements, hinge, scene accessory, and Duo camera APIs are 27.1 APIs). Xcode 27.1 beta (27A9269) is available since Sept 18, 2026. Note: iPhone Duo ships with iOS 27.1 while other devices already get iOS 27.2 betas; the Duo APIs live in the 27.1 SDK line.
+1. **Xcode 27.1** with the **iOS 27.1 SDK** (edge-to-edge layout, reserved regions, arrangements, hinge, scene accessory, and Duo camera APIs are 27.1 APIs). **Xcode 27.1 RC (27A9275) is out since Oct 5, 2026** - recompile and submit now. Note: iPhone Duo ships with iOS 27.1 while other devices already get iOS 27.2 betas; the Duo APIs live in the 27.1 SDK line.
 2. Run on the **iPhone Duo simulator in Device Hub**; use the on-screen control buttons to open, close, rotate, and fold the device.
-3. Xcode 27.1 ships the updated app-modernization analysis tool **"App Resizability"** (transcribed as "App Precisability" in the Tech Talk audio) - it audits fixed-size dependencies and now supports SwiftUI and iPhone Duo. Run it as an automated first pass.
-4. Note (App Store): starting April 2027, apps must be built with the latest SDKs (iOS 27 family).
+3. Xcode 27.1 ships the updated app-modernization analysis tool **"App Resizability"** (transcribed as "App Precisability" in the Tech Talk audio) - it audits fixed-size dependencies and now supports SwiftUI and iPhone Duo. Run it as an automated first pass: in Xcode, ask the coding assistant to "get my app ready for iPhone Duo"; for other coding agents, export the skill with `xcrun agent skills export`.
+4. Note (App Store), two April 2027 deadlines: apps must be built with the latest SDKs (iOS 27 family), and **all new app/game submissions must include iPhone Duo screenshots**.
 5. Timeline: Apple runs iPhone Duo **Group Labs on Sept 16-17, 2026** and **Developer Forums Q&As on Sept 23, 2026** (Photos & Camera, SwiftUI, UIKit sessions); the device **ships Oct 23, 2026** - adaptation should land before then.
-6. App Store assets (verified, ASC screenshot specifications): iPhone Duo screenshots are **1398 × 2034 px** for the outer display and **2007 × 2853 px** for the inner display (swap for landscape). Upload support in App Store Connect arrives later this year - prepare the assets now.
+6. App Store assets (verified, ASC screenshot specifications): iPhone Duo screenshots are **1398 × 2034 px** for the outer display and **2007 × 2853 px** for the inner display (swap for landscape); up to 10 per device size, .jpeg/.jpg/.png. **Uploads are live in App Store Connect as of Oct 5, 2026**, submissions for iPhone Duo-optimized apps are open now, and ASC has a new preview tool to visualize screenshots, product page headers and metadata on iPhone Duo.
 7. Design assets: official **iPhone Duo design kits for Figma and Sketch** are available from Apple Design Resources (https://developer.apple.com/design/resources/) - use them for mockups before coding.
-8. In-person help: Apple runs **worldwide iPhone Duo workshops** (https://developer.apple.com/events/view/upcoming-events?search=workshop); the developer landing page is https://developer.apple.com/iphone-duo/.
+8. In-person help: Apple runs **worldwide iPhone Duo workshops** (https://developer.apple.com/events/view/upcoming-events?topics=iphone-duo&formats=inperson); the developer landing page is https://developer.apple.com/iphone-duo/ and the condensed checklist lives at https://developer.apple.com/iphone-duo/prepare/.
+9. Official written guide: **"Preparing your app for iPhone Duo"** (Technology Overviews) is the canonical documentation article - https://developer.apple.com/documentation/technologyoverviews/preparing-your-app-for-iphone-duo
 
 ## 3. Migration workflow for Claude Code
 
@@ -137,6 +138,20 @@ ConcentricRectangle().fill(.green).padding(8).ignoresSafeArea()
 // UICornerConfiguration
 ```
 
+- Extend full-bleed hero/background images under the vertical bars with the **background extension** APIs:
+
+```swift
+// SwiftUI
+Image("background")
+    .ignoresSafeArea()
+    .backgroundExtensionEffect()
+
+// UIKit
+let bgView = UIBackgroundExtensionView()
+bgView.contentView.addSubview(imageView)
+```
+
+- Track size-class changes with trait tracking rather than polling device state: UIKit `traitCollectionDidChange` (compare `horizontalSizeClass` with the previous traits), SwiftUI reacts automatically via the environment.
 - For custom bars or edge-to-edge custom UI, use the new **reserved region safe-positioning API (iOS 27.1)**: SwiftUI's reserved region support and UIKit's `UIViewReservedRegion` let custom UI use maximum space without colliding with system UI.
 
 ### Phase 3 - Navigation, toolbars, and tab bars (vertical bars)
@@ -161,6 +176,11 @@ tabBarController.sidebar.preferredPlacement = .sidebar
   - Group related items with `ToolbarItemGroup` (SwiftUI) / `UIBarButtonItemGroup` (UIKit); the system preserves original groupings and inserts vertical space between top and bottom bar groups.
   - Keep controls near the content they affect (e.g. list controls above the list, not on the far edge), and give every non-text toolbar item both a title and a symbol: the symbol shows in the bar, the title in the overflow menu.
   - Do not override the system's default bar placement; when space is tight, navigation-focused apps should move toolbar actions into the system overflow menu, while task-oriented apps should minimize the tab bar instead.
+  - Query which edge the vertical bar is on: SwiftUI `@Environment(\.toolbarVerticalEdge)`, UIKit `traitCollection.verticalBarEdge` (per the "Preparing your app for iPhone Duo" doc).
+  - Pin prominent confirm actions with `ToolbarItem(placement: .topBarPinnedTrailing)` (SwiftUI) or `navigationItem.pinnedTrailingGroup = UIBarButtonItemGroup(barButtonItems: [item], representativeItem: nil)` (UIKit); `axisBehavior` and `visibilityPriority` also exist as `UIBarButtonItem` properties.
+  - Sheet placement can be steered with `.presentationPlacement(.trailing)` (SwiftUI) / `sheetController.preferredPlacement = .trailing` (UIKit).
+  - Icon rules from the official doc: vertical presentation requires an icon; the overflow menu requires icon + title; custom toolbar views cannot present vertically (give them an `axisBehavior` or keep them in horizontal bars).
+  - Spelling note: the Tech Talk page shows `.toolbarVerticalBehavior(.disabled)` while the official doc shows `.toolbarVerticalBehavior(.never)`; check the SDK for the final enum case.
 
 ```swift
 // Control the axis of a custom toolbar view
@@ -217,7 +237,7 @@ let regions = view.reservedRegions(kind: .division)
 let frames = regions.map(\.frame)
 ```
 
-- Only **active** regions are returned by default; query inactive ones (`.includeInactive`) for high-level decisions, e.g. prefer an even number of grid columns whenever a division region exists at all.
+- Only **active** regions are returned by default; query inactive ones (`.includeInactive`) for high-level decisions, e.g. prefer an even number of grid columns whenever a division region exists at all. The official doc also shows `kind: .all`, `options: .all`, and a `layoutDirectionBehavior:` parameter on the SwiftUI query.
 - **Displacement pattern** (design guidance for custom UI): when the device folds, move important elements to the region that supports their purpose instead of letting them straddle the fold.
   - Book pose: alerts and key actions move to the **trailing** region (continuity with the outer display when closing).
   - Tent/laptop pose: glanceable content to the **top** region, tappable controls to the **bottom** region.
@@ -401,12 +421,17 @@ All published by Apple on September 9, 2026 (iPhone Duo announcement day) unless
 - News: "Build for iPhone Duo with new resources" (Sept 18, 2026) - https://developer.apple.com/news/?id=nyuppv9r
 - API reference (iOS 27.1 beta): ArrangementView - https://developer.apple.com/documentation/swiftui/arrangementview ; UIArrangementViewController - https://developer.apple.com/documentation/uikit/uiarrangementviewcontroller ; UIHingeInteraction - https://developer.apple.com/documentation/uikit/uihingeinteraction
 - Apple Design Resources (iPhone Duo Figma/Sketch kits) - https://developer.apple.com/design/resources/
+- Documentation: "Preparing your app for iPhone Duo" (Technology Overviews) - https://developer.apple.com/documentation/technologyoverviews/preparing-your-app-for-iphone-duo
+- News: "Prepare and submit your apps for iPhone Duo" (Oct 5, 2026) - https://developer.apple.com/news/?id=kkphp5qo
+- Checklist: "Three steps to make your app shine on iPhone Duo" - https://developer.apple.com/iphone-duo/prepare/
+- Videos: two iPhone Duo Group Lab recordings (~60 min each) in the Meet with Apple collection - https://developer.apple.com/videos/all-videos/
 - Compiled research on iPhone Duo hardware/HIG (secondary source, Sept 2026): source of the reported point dimensions (466×678 / 626×890 pt)
 
 > Note: This guide was compiled from session transcripts, session pages, Apple Newsroom, the HIG, and secondary research. Some API spellings were normalized from audio transcription (e.g. `onGeometryChange`, `ArrangementView`; the Xcode tool transcribed as "App Precisability" is "App Resizability"). `ToolbarItemVisibilityPriority` / `UIBarButtonItemVisibilityPriority` and the vertical-bar ordering are confirmed by the HIG; hardware point dimensions still come from secondary reporting. As of Sept 21, 2026 the API reference is live and `ArrangementView`, `UIArrangementViewController`, and `UIHingeInteraction` are verified against it (all iOS/iPadOS 27.1+ beta); remaining unverified signatures (reserved regions, scene accessories, camera) should still be checked against the Xcode 27.1 beta SDK headers.
 
 ## 6. Changelog
 
+- **2026-10-07:** Major pre-launch update. Xcode 27.1 RC (27A9275, Oct 5); App Store submissions for iPhone Duo-optimized apps are open and ASC screenshot uploads are live (10 per device size, with a new ASC preview tool); second April 2027 deadline added (iPhone Duo screenshots mandatory in submissions). Incorporated Apple's new official written guide "Preparing your app for iPhone Duo" (Technology Overviews): background extension APIs (`backgroundExtensionEffect` / `UIBackgroundExtensionView`), vertical-bar edge queries (`\.toolbarVerticalEdge` / `traitCollection.verticalBarEdge`), `topBarPinnedTrailing` / `pinnedTrailingGroup` placements, sheet `presentationPlacement(.trailing)`, icon/title rules per presentation, reserved-region `.all` queries, and trait-tracking guidance. Added the /iphone-duo/prepare/ checklist page, `xcrun agent skills export` for the App Resizability skill, and two published Group Lab recordings (~60 min each) in the video library.
 - **2026-09-21:** Xcode 27.1 beta (27A9269) released Sept 18 with the iPhone Duo SDK and simulator; official Figma/Sketch design kits published in Apple Design Resources; worldwide workshops announced ("Build for iPhone Duo with new resources", Sept 18). API reference is now live: verified `ArrangementView` (init(primary:secondary:), automatic/split/overlay styles, layout-ratio and edge modifiers), `UIArrangementViewController` (updateArrangement(_:animated:), ViewPlacement, ViewState, Mac Catalyst support) and `UIHingeInteraction` (init(updateHandler:), UIHinge.angle/status). All are marked iOS/iPadOS 27.1+ beta. Also noted: iPhone Duo ships with iOS 27.1 while iOS 27.2 betas roll out for other devices.
 - **2026-09-15 (2):** Added verified App Store Connect screenshot specs for iPhone Duo (outer 1398 × 2034 px, inner 2007 × 2853 px; ASC upload support later this year) and refined the Group Labs / Forums Q&A schedule (labs Sept 16-17, Q&As Sept 23).
 - **2026-09-15:** Incorporated the full HIG "Designing for iPhone Duo" guidance: games adaptation rules, toolbar grouping (`ToolbarItemGroup` / `UIBarButtonItemGroup`), title+symbol requirement for bar items, control-proximity rule, and the overflow strategy for navigation-focused vs task-oriented apps. Confirmed visibility priority API names against the HIG. Status check: iOS 27.0 and Xcode 27 shipped Sept 14, 2026; iPhone Duo APIs still require the iOS 27.1 SDK (Xcode 27.1). No new iPhone Duo videos or news items since Sept 9.
