@@ -60,4 +60,4 @@ Full links are listed at the bottom of the guide.
 - Logical point dimensions and some bar-ordering details come from secondary reporting and are flagged as such in the guide.
 - This is an unofficial community resource, not affiliated with or endorsed by Apple.
 
-Last updated: October 19, 2026 (Xcode 27.1 final shipped Oct 15; App Store submissions and screenshot uploads for iPhone Duo are open; Apple's official written guide "Preparing your app for iPhone Duo" is incorporated, including background extension, vertical-bar edge queries, and sheet placement APIs)
+Last updated: October 19, 2026 (Xcode 27.1 final shipped Oct 15; App Store submissions and screenshot uploads for iPhone Duo are open; Apple's official written guide "Preparing your app for iPhone Duo" is incorporated, including background extension, vertical-bar edge queries, and sheet placement APIs; cross-checked against the documentation and App Resizability skill built into Xcode 27.1 (27A9275), with verified items marked in the guide)
